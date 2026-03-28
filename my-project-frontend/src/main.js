@@ -7,7 +7,9 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
-axios.defaults.baseURL = 'http://localhost:8080'
+// 本地开发默认连本机后端；生产构建请设置环境变量 VITE_API_BASE（如 https://api.xxx.com）
+axios.defaults.baseURL =
+  import.meta.env.VITE_API_BASE || 'http://localhost:8080'
 const app = createApp(App)
 
 const pinia = createPinia()

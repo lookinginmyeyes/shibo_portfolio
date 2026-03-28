@@ -1,13 +1,21 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 
-/** 放在 public/music/，走根路径，不打进 JS 包 */
+/** public/music/；需带 Vite base（GitHub Pages 子路径时不能写死 /music/...） */
+const musicBase = `${import.meta.env.BASE_URL || "/"}`.replace(/\/?$/, "/");
 const songs = [
   {
     title: "晴天",
-    url: "/music/jay-qingtian.mp3",
+    url: `${musicBase}music/jay-qingtian.mp3`,
   },
 ];
+
+/** mousedown 的 target 可能是文本节点，没有 .closest，会抛错导致整卡交互失效 */
+const eventToElement = (target) => {
+  if (target instanceof Element) return target;
+  if (target?.parentElement instanceof Element) return target.parentElement;
+  return null;
+};
 
 const currentSong = ref(songs[0]);
 const currentSongIndex = ref(0);
@@ -72,14 +80,19 @@ const changeProgress = () => {
   }
 };
 
-// 监听音频播放时间更新（仅注册一次；勿在 onUpdated 重复 addEventListener）
-onMounted(() => {
+const bindAudioListeners = () => {
   const a = audioPlayer.value;
-  if (a) {
-    a.addEventListener('timeupdate', updateProgress);
-    a.addEventListener('pause', onAudioPause);
-    a.addEventListener('play', onAudioPlay);
-  }
+  if (!a) return;
+  a.addEventListener('timeupdate', updateProgress);
+  a.addEventListener('pause', onAudioPause);
+  a.addEventListener('play', onAudioPlay);
+};
+
+// 监听音频播放时间更新（等 DOM 挂上 ref 后再绑，避免偶发 audio 为 null）
+onMounted(() => {
+  nextTick(() => {
+    bindAudioListeners();
+  });
 });
 
 onBeforeUnmount(() => {
@@ -95,12 +108,14 @@ onBeforeUnmount(() => {
 
 // 拖拽开始
 const startDragging = (e) => {
-  // 滑块、播放键等控件上的 mousedown 会冒泡到外层，若这里开始拖拽，浏览器会当成拖动手势，导致 click 无法触发（无法暂停）
-  if (e.target.type === 'range') return;
-  if (e.target.closest('.play-button')) return;
-  if (e.target.closest('.progress-container')) return;
-  if (e.target.closest('.controls')) return;
-  if (e.target.closest('.song-info-top')) return;
+  const el = eventToElement(e.target);
+  if (!el) return;
+  // 滑块、播放键等：避免当成拖拽，否则 click 可能进不来
+  if (el instanceof HTMLInputElement && el.type === 'range') return;
+  if (el.closest('.play-button')) return;
+  if (el.closest('.progress-container')) return;
+  if (el.closest('.controls')) return;
+  if (el.closest('.song-info-top')) return;
 
   isDragging.value = true;
   // 记录点击时的偏移量
@@ -186,7 +201,7 @@ const stopDragging = () => {
     </div>
 
     <!-- 播放/暂停按钮 -->
-    <button type="button" @click.stop="togglePlay" @mousedown.stop class="play-button">
+    <button type="button" @click.stop="togglePlay" class="play-button">
       {{ isPlaying ? '♫' : '▷' }}
     </button>
   </div>

@@ -19,7 +19,8 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
-    vueDevTools(),
+    // CI（Linux）下 DevTools 易出问题，仅本地开发启用
+    ...(process.env.CI ? [] : [vueDevTools()]),
   ],
   resolve: {
     alias: {

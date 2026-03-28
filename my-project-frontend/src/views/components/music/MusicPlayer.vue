@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUpdated, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 /** 放在 public/music/，走根路径，不打进 JS 包 */
 const songs = [
@@ -20,13 +20,19 @@ const playerPosition = ref({ x: 20, y: 20 }); // 基于 left 和 bottom 定位
 const isDragging = ref(false);
 const dragOffset = ref({ x: 0, y: 0 }); // 拖拽偏移量（基于 left 和 bottom）
 
-// 播放/暂停切换
-const togglePlay = () => {
-  if (audioPlayer.value.paused) {
-    audioPlayer.value.play();
-    isPlaying.value = true;
+// 播放/暂停切换（play() 为 Promise，失败时与 UI 对齐）
+const togglePlay = async () => {
+  const a = audioPlayer.value;
+  if (!a) return;
+  if (a.paused) {
+    try {
+      await a.play();
+      isPlaying.value = true;
+    } catch {
+      isPlaying.value = false;
+    }
   } else {
-    audioPlayer.value.pause();
+    a.pause();
     isPlaying.value = false;
   }
 };
@@ -51,6 +57,14 @@ const updateProgress = () => {
   }
 };
 
+const onAudioPause = () => {
+  isPlaying.value = false;
+};
+
+const onAudioPlay = () => {
+  isPlaying.value = true;
+};
+
 // 改变播放进度
 const changeProgress = () => {
   if (audioPlayer.value) {
@@ -58,24 +72,35 @@ const changeProgress = () => {
   }
 };
 
-// 监听音频播放时间更新
+// 监听音频播放时间更新（仅注册一次；勿在 onUpdated 重复 addEventListener）
 onMounted(() => {
-  if (audioPlayer.value) {
-    audioPlayer.value.addEventListener('timeupdate', updateProgress);
+  const a = audioPlayer.value;
+  if (a) {
+    a.addEventListener('timeupdate', updateProgress);
+    a.addEventListener('pause', onAudioPause);
+    a.addEventListener('play', onAudioPlay);
   }
 });
 
-// 确保音频元素已更新
-onUpdated(() => {
-  if (audioPlayer.value) {
-    audioPlayer.value.addEventListener('timeupdate', updateProgress);
+onBeforeUnmount(() => {
+  const a = audioPlayer.value;
+  if (a) {
+    a.removeEventListener('timeupdate', updateProgress);
+    a.removeEventListener('pause', onAudioPause);
+    a.removeEventListener('play', onAudioPlay);
   }
+  window.removeEventListener('mousemove', onDragging);
+  window.removeEventListener('mouseup', stopDragging);
 });
 
 // 拖拽开始
 const startDragging = (e) => {
-  // 如果点击的是音量滑块或进度条，则不触发拖拽
+  // 滑块、播放键等控件上的 mousedown 会冒泡到外层，若这里开始拖拽，浏览器会当成拖动手势，导致 click 无法触发（无法暂停）
   if (e.target.type === 'range') return;
+  if (e.target.closest('.play-button')) return;
+  if (e.target.closest('.progress-container')) return;
+  if (e.target.closest('.controls')) return;
+  if (e.target.closest('.song-info-top')) return;
 
   isDragging.value = true;
   // 记录点击时的偏移量
@@ -161,7 +186,7 @@ const stopDragging = () => {
     </div>
 
     <!-- 播放/暂停按钮 -->
-    <button @click="togglePlay" class="play-button">
+    <button type="button" @click.stop="togglePlay" @mousedown.stop class="play-button">
       {{ isPlaying ? '♫' : '▷' }}
     </button>
   </div>

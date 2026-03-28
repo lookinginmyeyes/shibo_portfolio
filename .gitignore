@@ -1,0 +1,6 @@
+# Monorepo root
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -134,8 +134,9 @@ const onDragging = (e) => {
     const newBottom = window.innerHeight - e.clientY - dragOffset.value.y;
 
     // 限制播放器不能拖出可视区域
-    const safeLeft = Math.max(0, Math.min(newLeft, window.innerWidth - 100));
-    const safeBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 100));
+    const cardOuter = 166; /* 120 内容区 + 40 padding + 6 border，与 AI 浮块一致 */
+    const safeLeft = Math.max(0, Math.min(newLeft, window.innerWidth - cardOuter));
+    const safeBottom = Math.max(0, Math.min(newBottom, window.innerHeight - cardOuter));
 
     playerPosition.value = {
       x: safeLeft,
@@ -217,6 +218,7 @@ const stopDragging = () => {
   height: 120px;
   border-radius: 50%;
   padding: 20px;
+  box-sizing: content-box;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   z-index: 999999;
   cursor: move;

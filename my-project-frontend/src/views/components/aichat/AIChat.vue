@@ -118,8 +118,9 @@ const onDragging = (e) => {
     const newBottom = window.innerHeight - e.clientY - dragOffset.value.y
 
     // 限制不能拖出可视区域
-    const safeLeft = Math.max(0, Math.min(newLeft, window.innerWidth - 100))
-    const safeBottom = Math.max(0, Math.min(newBottom, window.innerHeight - 100))
+    const cardOuter = 166 /* 与 .music-player / .ai-card 外径一致：120+40+6 */
+    const safeLeft = Math.max(0, Math.min(newLeft, window.innerWidth - cardOuter))
+    const safeBottom = Math.max(0, Math.min(newBottom, window.innerHeight - cardOuter))
 
     cardPosition.value = {
       x: safeLeft,
@@ -338,7 +339,7 @@ onUnmounted(() => {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  padding: 11px 14px 10px;
+  padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   z-index: 999999;
   cursor: pointer;
@@ -348,13 +349,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   text-align: center;
   bottom: 160px;
   left: 20px;
   animation: float 3s ease-in-out infinite;
   overflow: hidden;
   background: linear-gradient(135deg, #7bc6cc, #1e88e5);
+  box-sizing: content-box;
 }
 
 .background-image {
@@ -372,9 +374,9 @@ onUnmounted(() => {
 .card-title {
   display: flex;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
   color: white;
-  margin: 0 0 2px;
+  margin: 15px 0 5px;
   font-weight: bold;
   text-shadow: 1px 1px 2px #000;
   flex-shrink: 0;
@@ -389,10 +391,10 @@ onUnmounted(() => {
 
 .ai-icon {
   margin: 0;
-  flex: 0 0 auto;
-  height: 52px;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   position: relative;
   z-index: 1;
@@ -416,8 +418,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: auto;
-  padding-top: 2px;
+  margin: 0 0 2px;
+  padding-top: 0;
   flex-shrink: 0;
   position: relative;
   z-index: 2;

@@ -6,7 +6,15 @@
         :class="['tab-button', { active: activeTab === 'projects' }]"
         @click="activeTab = 'projects'"
       >
-        我的项目
+        {{ projectsCategoryTitle }}
+      </button>
+      <button
+        v-if="documents.length"
+        type="button"
+        :class="['tab-button', { active: activeTab === 'documents' }]"
+        @click="activeTab = 'documents'"
+      >
+        {{ documentsCategoryTitle }}
       </button>
       <button
         type="button"
@@ -25,7 +33,6 @@
             :href="project.url"
             target="_blank"
             rel="noopener noreferrer"
-            @click.prevent="openUrl(project.url)"
           >{{ project.name }}</a>
         </h3>
         <p>{{ project.desc }}</p>
@@ -35,13 +42,34 @@
             :href="project.url"
             target="_blank"
             rel="noopener noreferrer"
-            @click.prevent="openUrl(project.url)"
           >打开链接 →</a>
         </p>
       </div>
     </div>
 
-    <div v-else class="skills-panel">
+    <div v-else-if="activeTab === 'documents'" class="task-list">
+      <div v-for="(doc, index) in documents" :key="'doc-' + index" class="task-card">
+        <h3>
+          <a
+            class="project-title-link"
+            :href="doc.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >{{ doc.name }}</a>
+        </h3>
+        <p>{{ doc.desc }}</p>
+        <p>
+          <a
+            class="inline-link"
+            :href="doc.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >打开飞书文档 →</a>
+        </p>
+      </div>
+    </div>
+
+    <div v-else-if="activeTab === 'skills'" class="skills-panel">
       <p class="skills-intro">常用方向与工具（随项目迭代更新）。</p>
       <div class="skill-tags">
         <span
@@ -57,7 +85,6 @@
           :href="skillsRepoUrl"
           target="_blank"
           rel="noopener noreferrer"
-          @click.prevent="openUrl(skillsRepoUrl)"
         >AIPM Skills 开源仓库 →</a>
       </div>
     </div>
@@ -69,16 +96,14 @@ import { ref } from 'vue'
 
 defineProps({
   projects: { type: Array, default: () => [] },
+  projectsCategoryTitle: { type: String, default: '我的项目' },
+  documents: { type: Array, default: () => [] },
+  documentsCategoryTitle: { type: String, default: '我的文档' },
   skills: { type: Array, default: () => [] },
   skillsRepoUrl: { type: String, default: '' },
 })
 
 const activeTab = ref('projects')
-
-const openUrl = (url) => {
-  if (!url) return
-  window.open(url, '_blank', 'noopener,noreferrer')
-}
 
 const palette = [
   'rgb(255, 99, 132)',

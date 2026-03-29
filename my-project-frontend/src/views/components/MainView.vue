@@ -32,22 +32,43 @@
                       {{ tag }}
                     </span>
                   </div>
-                  <!-- 个人项目列表 -->
-                  <div v-if="section.type === 'project' && section.projects" class="project-list">
-                    <div
-                        v-for="(project, pIndex) in section.projects"
-                        :key="pIndex"
-                        class="project-item"
-                    >
-                      <a
-                          class="project-link"
-                          :href="project.url"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          @click.stop.prevent="openExternal(project.url)"
-                      >{{ project.name }}</a>
-                      <p class="project-desc">{{ project.desc }}</p>
-                    </div>
+                  <!-- 我的小宇宙：项目 + 文档，同一滚动区 -->
+                  <div
+                      v-if="section.type === 'project' && (section.projects?.length || section.documents?.length)"
+                      class="universe-card-scroll"
+                  >
+                    <template v-if="section.projects?.length">
+                      <div
+                          v-for="(project, pIndex) in section.projects"
+                          :key="'p-' + pIndex"
+                          class="project-item"
+                      >
+                        <a
+                            class="project-link"
+                            :href="project.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            @click.stop.prevent="openExternal(project.url)"
+                        >{{ project.name }}</a>
+                        <p class="project-desc">{{ project.desc }}</p>
+                      </div>
+                    </template>
+                    <template v-if="section.documents?.length">
+                      <div
+                          v-for="(doc, dIndex) in section.documents"
+                          :key="'d-' + dIndex"
+                          class="project-item"
+                      >
+                        <a
+                            class="project-link"
+                            :href="doc.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            @click.stop.prevent="openExternal(doc.url)"
+                        >{{ doc.name }}</a>
+                        <p class="project-desc">{{ doc.desc }}</p>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -69,22 +90,43 @@
                       {{ tag }}
                     </span>
                   </div>
-                  <!-- 个人项目列表 -->
-                  <div v-if="section.type === 'project' && section.projects" class="project-list">
-                    <div
-                        v-for="(project, pIndex) in section.projects"
-                        :key="pIndex"
-                        class="project-item"
-                    >
-                      <a
-                          class="project-link"
-                          :href="project.url"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          @click.stop.prevent="openExternal(project.url)"
-                      >{{ project.name }}</a>
-                      <p class="project-desc">{{ project.desc }}</p>
-                    </div>
+                  <!-- 我的小宇宙：项目 + 文档，同一滚动区 -->
+                  <div
+                      v-if="section.type === 'project' && (section.projects?.length || section.documents?.length)"
+                      class="universe-card-scroll"
+                  >
+                    <template v-if="section.projects?.length">
+                      <div
+                          v-for="(project, pIndex) in section.projects"
+                          :key="'p-' + pIndex"
+                          class="project-item"
+                      >
+                        <a
+                            class="project-link"
+                            :href="project.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            @click.stop.prevent="openExternal(project.url)"
+                        >{{ project.name }}</a>
+                        <p class="project-desc">{{ project.desc }}</p>
+                      </div>
+                    </template>
+                    <template v-if="section.documents?.length">
+                      <div
+                          v-for="(doc, dIndex) in section.documents"
+                          :key="'d-' + dIndex"
+                          class="project-item"
+                      >
+                        <a
+                            class="project-link"
+                            :href="doc.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            @click.stop.prevent="openExternal(doc.url)"
+                        >{{ doc.name }}</a>
+                        <p class="project-desc">{{ doc.desc }}</p>
+                      </div>
+                    </template>
                   </div>
                 </div>
                 <div class="image-container">
@@ -244,7 +286,13 @@
     </div>
 
     <!-- 弹窗组件 -->
-    <el-dialog v-model="dialogVisible" width="800px" @closed="onDialogClosed">
+    <el-dialog
+        v-model="dialogVisible"
+        width="800px"
+        :z-index="3000000"
+        append-to-body
+        @closed="onDialogClosed"
+    >
       <component :is="currentComponent" v-bind="currentDialogProps" />
     </el-dialog>
   </div>
@@ -262,9 +310,12 @@ import Donation from "@/views/components/card/Donation.vue";
 import { get,post } from '@/net/index.js'
 import {ElMessage} from "element-plus";
 import {
+  cloneUniverseDocumentsForUi,
   cloneUniverseProjectsForUi,
   createUniverseHomeSection,
   skillsRepoUrl,
+  universeDocumentsCategoryTitle,
+  universeProjectsCategoryTitle,
   universeSkills,
 } from '@/data/siteContent.js'
 
@@ -554,6 +605,9 @@ const openCardDialog = (section, event) => {
   } else if (section.type === 'project') {
     currentDialogProps.value = {
       projects: cloneUniverseProjectsForUi(),
+      projectsCategoryTitle: universeProjectsCategoryTitle,
+      documents: cloneUniverseDocumentsForUi(),
+      documentsCategoryTitle: universeDocumentsCategoryTitle,
       skills: universeSkills,
       skillsRepoUrl,
     }
@@ -1221,15 +1275,16 @@ html.dark .charge-icon-right {
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
-/* 左侧个人项目列表样式 */
-.project-list {
-  margin-top: 12px;
+/* 左侧「我的小宇宙」：项目 + 文档共用一个纵向滚动区 */
+.universe-card-scroll {
+  margin-top: 10px;
+  max-height: 118px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 88px;
-  overflow: auto;
-  padding-right: 6px;
+  gap: 6px;
 }
 
 .project-item {

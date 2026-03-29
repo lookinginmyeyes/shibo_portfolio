@@ -32,12 +32,33 @@ export const universeSkills = [
 /** Skill 汇总弹窗底部仓库链接 */
 export const skillsRepoUrl = 'https://github.com/lookinginmyeyes/AIPM-skills'
 
+/** 点击「我的小宇宙」弹窗内 Tab 标题 */
+export const universeProjectsCategoryTitle = '我的项目'
+export const universeDocumentsCategoryTitle = '我的文档'
+
+/** 飞书文档等（弹窗「我的文档」Tab） */
+export const universeDocuments = [
+  {
+    name: 'AI 开发 App 全流程记录',
+    url: 'https://rcnfn90j7br5.feishu.cn/wiki/HYg3wXxV8iV8jJkKEIec6Wg3njg?from=from_copylink',
+    desc: '飞书 Wiki：用 AI 开发 App 的全流程实践记录（需求、实现到发布）。',
+  },
+]
+
 /** 卡片与弹窗共用的项目列表（避免引用被意外改写） */
 export function cloneUniverseProjectsForUi() {
   return universeProjects.map((p) => ({
     name: p.name,
     url: p.url,
     desc: p.desc,
+  }))
+}
+
+export function cloneUniverseDocumentsForUi() {
+  return universeDocuments.map((d) => ({
+    name: d.name,
+    url: d.url,
+    desc: d.desc,
   }))
 }
 
@@ -48,6 +69,9 @@ export function createUniverseHomeSection() {
     description: '几个正在生长的个人项目，欢迎随便点开逛逛。',
     image: 'mainview/2.png',
     type: 'project',
+    projectsCategoryTitle: universeProjectsCategoryTitle,
     projects: cloneUniverseProjectsForUi(),
+    documentsCategoryTitle: universeDocumentsCategoryTitle,
+    documents: cloneUniverseDocumentsForUi(),
   }
 }

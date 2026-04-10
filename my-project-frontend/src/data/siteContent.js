@@ -43,6 +43,11 @@ export const universeDocuments = [
     url: 'https://rcnfn90j7br5.feishu.cn/wiki/HYg3wXxV8iV8jJkKEIec6Wg3njg?from=from_copylink',
     desc: '飞书 Wiki：用 AI 开发 App 的全流程实践记录（需求、实现到发布）。',
   },
+  {
+    name: 'Vibe coding 横向测评',
+    url: 'https://rcnfn90j7br5.feishu.cn/wiki/QYAzwWvHzih8gdk2Lt5cnDXhncd?from=from_copylink',
+    desc: '飞书 Wiki：Vibe coding 工具/工作流横向对比与测评记录。',
+  },
 ]
 
 /** 卡片与弹窗共用的项目列表（避免引用被意外改写） */
